@@ -1,0 +1,11 @@
+<svg width="300" height="90" viewBox="0 0 300 90" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="90" fill="#111111" rx="16" ry="16"/>
+  <g transform="translate(20, 18)">
+    <path d="M5 45 L5 20 C5 15 10 12 15 12 L25 12 C30 12 35 15 35 20 L35 45 Z" fill="#d4af37" />
+    <path d="M35 20 C45 25 55 25 65 20" stroke="#d4af37" stroke-width="4" fill="none" />
+    <path d="M20 12 C18 8 22 4 28 4 C34 4 38 8 36 12" stroke="#d4af37" stroke-width="4" fill="none" />
+    <path d="M40 35 L50 15 L60 35" stroke="#d4af37" stroke-width="4" fill="none" />
+  </g>
+  <text x="90" y="45" font-family="'Segoe UI', sans-serif" font-size="28" font-weight="700" fill="#d4af37">Cozy Thrift</text>
+  <text x="90" y="68" font-family="'Segoe UI', sans-serif" font-size="16" fill="#d4af37">KE</text>
+</svg>

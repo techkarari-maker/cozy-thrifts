@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cart | Cozy Thrift KE</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Great+Vibes&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav>
+  <div class="container navinner">
+    <a class="brand" href="index.html"><img src="logo.svg" alt="Cozy Thrift KE"><div class="brand-title"><h1>Cozy Thrift KE</h1><p>Your cart</p></div></a>
+    <div class="navlinks">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="contact.html">Contact</a>
+      <a href="faq.html">FAQ</a>
+      <a class="cta" href="admin.html">Admin</a>
+    </div>
+  </div>
+</nav>
+<main class="container">
+  <section class="section">
+    <h3>Shopping Cart</h3>
+    <p class="section-note">Review items, update quantities, and continue to checkout when you are ready.</p>
+    <div class="cart-layout">
+      <table class="cart-table">
+        <thead>
+          <tr><th>Product</th><th>Quantity</th><th>Subtotal</th><th></th></tr>
+        </thead>
+        <tbody id="cartTableBody"></tbody>
+      </table>
+      <div id="cartEmpty" class="alert" style="display:none;">Your cart is empty. Add a few cozy pieces from the shop.</div>
+      <div class="summary-card">
+        <div class="summary-total"><span>Total</span><span id="cartTotal">Ksh 0</span></div>
+        <a id="checkoutButton" class="btn" href="checkout.html">Proceed to Checkout</a>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="container footer-grid">
+    <div>
+      <h4>Cozy Thrift KE</h4>
+      <p>Handpicked thrift pieces with warm style and affordable prices. Shop with confidence and connect by WhatsApp.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Explore</h4>
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="contact.html">Contact</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+    <div>
+      <h4>Follow</h4>
+      <div class="social-links">
+        <a href="#">IG</a>
+        <a href="#">FB</a>
+        <a href="#">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+  <div class="container footer-note">© 2026 Cozy Thrift KE. All rights reserved.</div>
+</footer>
+<a id="floatingWhatsApp" class="floating-whatsapp" target="_blank">Chat on WhatsApp</a>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

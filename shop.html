@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop | Cozy Thrift KE</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Great+Vibes&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav>
+  <div class="container navinner">
+    <a class="brand" href="index.html"><img src="logo.svg" alt="Cozy Thrift KE"><div class="brand-title"><h1>Cozy Thrift KE</h1><p>Shop thrifted style</p></div></a>
+    <div class="navlinks">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="contact.html">Contact</a>
+      <a href="faq.html">FAQ</a>
+      <a href="cart.html">Cart</a>
+      <a class="cta" href="admin.html">Admin</a>
+    </div>
+  </div>
+</nav>
+<main class="container">
+  <section class="section">
+    <h3>Find your next thrifted favorite</h3>
+    <p class="section-note">Browse every item, filter categories, search in real time, and sort by price or newest arrivals.</p>
+    <div class="search-bar">
+      <input id="searchInput" type="text" placeholder="Search products, styles, or brands">
+      <select id="sortSelect">
+        <option value="newest">Newest first</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+      </select>
+    </div>
+    <div id="shopCategoryList" class="section small"></div>
+    <div id="shopGrid" class="grid cards"></div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="container footer-grid">
+    <div>
+      <h4>Cozy Thrift KE</h4>
+      <p>Handpicked thrift pieces with warm style and affordable prices. Shop with confidence and connect by WhatsApp.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Explore</h4>
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="contact.html">Contact</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+    <div>
+      <h4>Follow</h4>
+      <div class="social-links">
+        <a href="#">IG</a>
+        <a href="#">FB</a>
+        <a href="#">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+  <div class="container footer-note">© 2026 Cozy Thrift KE. All rights reserved.</div>
+</footer>
+<a id="floatingWhatsApp" class="floating-whatsapp" target="_blank">Chat on WhatsApp</a>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

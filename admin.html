@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | Cozy Thrift KE</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Great+Vibes&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav>
+  <div class="container navinner">
+    <a class="brand" href="index.html"><img src="logo.svg" alt="Cozy Thrift KE"><div class="brand-title"><h1>Cozy Thrift KE</h1><p>Admin panel</p></div></a>
+    <div class="navlinks">
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="contact.html">Contact</a>
+      <a href="faq.html">FAQ</a>
+      <a href="cart.html">Cart</a>
+    </div>
+  </div>
+</nav>
+<main class="container">
+  <section class="section">
+    <h3>Admin Dashboard</h3>
+    <p class="section-note">Manage products quickly with simple admin controls. Use username <strong>lixxyshiko</strong> and password <strong>thrift2026</strong>.</p>
+    <div id="adminLoginPanel" class="admin-panel">
+      <form onsubmit="handleAdminLogin(event)">
+        <div class="field"><label for="adminUsername">Username</label><input id="adminUsername" type="text" placeholder="lixxyshiko"></div>
+        <div class="field"><label for="adminPassword">Password</label><input id="adminPassword" type="password" placeholder="thrift2026"></div>
+        <button class="btn" type="submit">Login</button>
+      </form>
+    </div>
+    <div id="adminPanel" class="admin-panel" style="display:none;">
+      <div class="admin-grid">
+        <form id="adminForm" class="admin-grid">
+          <input id="adminProductId" type="hidden">
+          <div class="field"><label for="adminName">Product Name</label><input id="adminName" type="text"></div>
+          <div class="field"><label for="adminPrice">Price</label><input id="adminPrice" type="text"></div>
+          <div class="field"><label for="adminCategory">Category</label><select id="adminCategory"><option value="">Select category</option></select></div>
+          <div class="field"><label for="adminSize">Size</label><select id="adminSize"><option value="">Select size</option><option value="Large">Large</option><option value="Medium">Medium</option><option value="Small">Small</option></select></div>
+          <div class="field"><label for="adminCondition">Condition</label><select id="adminCondition"><option value="">Select condition</option><option value="Excellent">Excellent</option><option value="Very Good">Very Good</option><option value="Good">Good</option><option value="Fair">Fair</option></select></div>
+          <div class="field">
+            <label>Image or Video</label>
+            <div id="adminDropzone" class="dropzone">
+              <p>Drag & drop image or video here, or click to choose file</p>
+              <div id="adminDropzoneText" class="file-name">No file selected</div>
+            </div>
+            <input id="adminMediaFile" type="file" accept="image/*,video/*" style="display:none;">
+          </div>
+          <div class="field"><label for="adminImage">Media URL (optional)</label><input id="adminImage" type="text" placeholder="https://..."></div>
+          <div class="field"><label for="adminDescription">Description</label><textarea id="adminDescription"></textarea></div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+            <button id="adminSubmitButton" class="btn" type="submit">Add Product</button>
+            <button id="adminCancelEdit" class="btn secondary" type="button" style="display:none;">Cancel Edit</button>
+            <button id="signOutButton" class="btn secondary" type="button">Sign out</button>
+          </div>
+        </form>
+        <div>
+          <h4>Current Products</h4>
+          <div id="adminProducts" class="admin-list"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div class="container footer-grid">
+    <div>
+      <h4>Cozy Thrift KE</h4>
+      <p>Handpicked thrift pieces with warm style and affordable prices. Shop with confidence and connect by WhatsApp.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Explore</h4>
+      <a href="index.html">Home</a>
+      <a href="shop.html">Shop</a>
+      <a href="contact.html">Contact</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+    <div>
+      <h4>Follow</h4>
+      <div class="social-links">
+        <a href="#">IG</a>
+        <a href="#">FB</a>
+        <a href="#">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+  <div class="container footer-note">© 2026 Cozy Thrift KE. All rights reserved.</div>
+</footer>
+<a id="floatingWhatsApp" class="floating-whatsapp" target="_blank">Chat on WhatsApp</a>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
