@@ -7,10 +7,22 @@ function saveLocalProducts(products) {
   localStorage.setItem('siteProducts', JSON.stringify(products));
 }
 
+function normalizeProductCategories(products) {
+  return products.map((product) => ({
+    ...product,
+    category: product.category === 'Sweater Vests' ? 'Knitwear' : product.category
+  }));
+}
+
 function initProductStore() {
-  if (!localStorage.getItem('siteProducts')) {
-    saveLocalProducts(window.PRODUCTS);
+  const stored = localStorage.getItem('siteProducts');
+  if (!stored) {
+    saveLocalProducts(normalizeProductCategories(window.PRODUCTS));
+    return;
   }
+
+  const products = normalizeProductCategories(JSON.parse(stored));
+  saveLocalProducts(products);
 }
 
 function getCart() {
@@ -79,7 +91,7 @@ function addToCartFromCard(productId) {
 function renderFeaturedProducts() {
   const featured = document.getElementById('featuredProducts');
   if (!featured) return;
-  const featuredCategories = ['Crop Tops', 'Pajama Trousers', 'Dresses', 'Sweater Vests', 'Leather Miniskirts', 'Jackets', 'Knitwear'];
+  const featuredCategories = ['Crop Tops', 'Pajama Trousers', 'Dresses', 'Leather Miniskirts', 'Jackets', 'Knitwear'];
   const products = getLocalProducts().filter((product) => featuredCategories.includes(product.category)).slice(0, 8);
   featured.innerHTML = products.map((product) => `
     <a class="card" href="product.html?id=${product.id}">
@@ -91,7 +103,7 @@ function renderFeaturedProducts() {
 }
 
 function getCategoryPriority() {
-  return ['Crop Tops', 'Pajama Trousers', 'Leather Miniskirts', 'Sweater Vests'];
+  return ['Crop Tops', 'Pajama Trousers', 'Leather Miniskirts', 'Knitwear'];
 }
 
 function sortCategories(categories) {
@@ -112,7 +124,7 @@ function renderCategorySection() {
   const container = document.getElementById('categoriesGrid');
   if (!container) return;
   const products = getLocalProducts();
-  const categories = sortCategories([...new Set(products.map((product) => product.category))]).filter(cat => cat !== 'Sweater Vests');
+  const categories = sortCategories([...new Set(products.map((product) => product.category))]);
   container.innerHTML = categories.map((category) => `
     <a class="category-card" href="shop.html?category=${encodeURIComponent(category.toLowerCase())}">
       <h4>${category}</h4>
@@ -176,7 +188,7 @@ function renderShopPage() {
   }
   const filters = document.getElementById('shopCategoryList');
   if (filters) {
-    const categories = sortCategories([...new Set(getLocalProducts().map((product) => product.category))]).filter(cat => cat !== 'Sweater Vests');
+    const categories = sortCategories([...new Set(getLocalProducts().map((product) => product.category))]);
     filters.innerHTML = categories.map((category) => {
       const isActive = categoryFilter && category.toLowerCase() === categoryFilter.toLowerCase();
       return `

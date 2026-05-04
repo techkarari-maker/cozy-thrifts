@@ -147,7 +147,7 @@ window.PRODUCTS = [
     id: 'p10',
     name: 'Cable Knit Sweater Vest',
     price: 780,
-    category: 'Sweater Vests',
+    category: 'Knitwear',
     size: 'M',
     condition: 'Very Good',
     slug: 'cable-knit-sweater-vest',
