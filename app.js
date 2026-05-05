@@ -106,6 +106,10 @@ function getCategoryPriority() {
   return ['Crop Tops', 'Pajama Trousers', 'Leather Miniskirts', 'Knitwear'];
 }
 
+function shouldShowCategory(category) {
+  return category !== 'Sweater Vests';
+}
+
 function sortCategories(categories) {
   const priority = getCategoryPriority();
   return [...categories].sort((a, b) => {
@@ -188,7 +192,7 @@ function renderShopPage() {
   }
   const filters = document.getElementById('shopCategoryList');
   if (filters) {
-    const categories = sortCategories([...new Set(getLocalProducts().map((product) => product.category))]);
+    const categories = sortCategories([...new Set(getLocalProducts().map((product) => product.category))]).filter(shouldShowCategory);
     filters.innerHTML = categories.map((category) => {
       const isActive = categoryFilter && category.toLowerCase() === categoryFilter.toLowerCase();
       return `
