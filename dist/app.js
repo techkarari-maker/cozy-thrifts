@@ -99,6 +99,17 @@ function renderFeaturedProducts() {
     </a>
   `).join("");
 }
+function renderHeroGallery() {
+  const heroGallery = document.getElementById("heroGallery");
+  if (!heroGallery)
+    return;
+  const products = getLocalProducts().slice(0, 4);
+  heroGallery.innerHTML = products.map((product) => `
+    <a class="hero-gallery-card" href="product.html?id=${product.id}">
+      <img src="${product.images[0]}" alt="${product.name}">
+    </a>
+  `).join("");
+}
 function getCategoryPriority() {
   return ["Crop Tops", "Pajama Trousers", "Leather Miniskirts", "Knitwear"];
 }
@@ -679,6 +690,7 @@ function showWhatsAppButton() {
 }
 function initPage() {
   initProductStore();
+  renderHeroGallery();
   renderFeaturedProducts();
   renderCategorySection();
   renderTestimonials();
