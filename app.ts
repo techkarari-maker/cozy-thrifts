@@ -1,57 +1,74 @@
-function getLocalProducts() {
-  const stored = localStorage.getItem('siteProducts');
-  return stored ? JSON.parse(stored) : window.PRODUCTS.slice();
+function parseJson<T>(value: string | null, fallback: T): T {
+  if (!value) return fallback;
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
 }
 
-function saveLocalProducts(products) {
+function getLocalProducts(): Product[] {
+  const stored = localStorage.getItem('siteProducts');
+  return stored ? parseJson<Product[]>(stored, []) : window.PRODUCTS.slice();
+}
+
+function saveLocalProducts(products: Product[]): void {
   localStorage.setItem('siteProducts', JSON.stringify(products));
 }
 
-function normalizeProductCategories(products) {
+function normalizeProductCategories(products: Product[]): Product[] {
   return products.map((product) => ({
     ...product,
     category: product.category === 'Sweater Vests' ? 'Knitwear' : product.category
   }));
 }
 
-function initProductStore() {
+function initProductStore(): void {
   const stored = localStorage.getItem('siteProducts');
   if (!stored) {
     saveLocalProducts(normalizeProductCategories(window.PRODUCTS));
     return;
   }
 
-  const products = normalizeProductCategories(JSON.parse(stored));
+  const products = normalizeProductCategories(parseJson<Product[]>(stored, []));
   saveLocalProducts(products);
 }
 
-function getCart() {
-  return JSON.parse(localStorage.getItem('cart')) || [];
+function getCart(): CartItem[] {
+  return parseJson<CartItem[]>(localStorage.getItem('cart'), []);
 }
 
-function saveCart(cart) {
+function saveCart(cart: CartItem[]): void {
   localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-function formatPrice(amount) {
+function formatPrice(amount: number): string {
   return `Ksh ${amount.toLocaleString()}`;
 }
 
-function toBase64(file) {
+function toBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+        return;
+      }
+
+      reject(new Error('Could not read uploaded media.'));
+    };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
-function getQueryParameter(key) {
+function getQueryParameter(key: string): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get(key);
 }
 
-function createProductCard(product) {
+function createProductCard(product: Product): string {
   return `
     <article class="card">
       <a class="card-media" href="product.html?id=${product.id}">
@@ -59,7 +76,7 @@ function createProductCard(product) {
       </a>
       <div class="card-body">
         <p class="card-title">${product.name}</p>
-        <p class="card-subtitle">${product.category} · ${product.size}</p>
+        <p class="card-subtitle">${product.category} | ${product.size}</p>
         <div class="card-meta">
           <span class="badge">${formatPrice(product.price)}</span>
           <span class="badge">${product.condition}</span>
@@ -73,10 +90,11 @@ function createProductCard(product) {
   `;
 }
 
-function addToCartFromCard(productId) {
+function addToCartFromCard(productId: string): void {
   const products = getLocalProducts();
   const product = products.find((item) => item.id === productId);
   if (!product) return;
+
   const cart = getCart();
   const existing = cart.find((item) => item.id === productId);
   if (existing) {
@@ -88,9 +106,10 @@ function addToCartFromCard(productId) {
   alert('Added to cart');
 }
 
-function renderFeaturedProducts() {
+function renderFeaturedProducts(): void {
   const featured = document.getElementById('featuredProducts');
   if (!featured) return;
+
   const featuredCategories = ['Crop Tops', 'Pajama Trousers', 'Dresses', 'Leather Miniskirts', 'Jackets', 'Knitwear'];
   const products = getLocalProducts().filter((product) => featuredCategories.includes(product.category)).slice(0, 8);
   featured.innerHTML = products.map((product) => `
@@ -102,15 +121,15 @@ function renderFeaturedProducts() {
   `).join('');
 }
 
-function getCategoryPriority() {
+function getCategoryPriority(): string[] {
   return ['Crop Tops', 'Pajama Trousers', 'Leather Miniskirts', 'Knitwear'];
 }
 
-function shouldShowCategory(category) {
+function shouldShowCategory(category: string): boolean {
   return category !== 'Sweater Vests';
 }
 
-function sortCategories(categories) {
+function sortCategories(categories: string[]): string[] {
   const priority = getCategoryPriority();
   return [...categories].sort((a, b) => {
     const aIndex = priority.indexOf(a);
@@ -124,9 +143,10 @@ function sortCategories(categories) {
   });
 }
 
-function renderCategorySection() {
+function renderCategorySection(): void {
   const container = document.getElementById('categoriesGrid');
   if (!container) return;
+
   const products = getLocalProducts();
   const categories = sortCategories([...new Set(products.map((product) => product.category))]);
   container.innerHTML = categories.map((category) => `
@@ -137,32 +157,36 @@ function renderCategorySection() {
   `).join('');
 }
 
-function renderTestimonials() {
-  const testimonials = [
+function renderTestimonials(): void {
+  const testimonials: Testimonial[] = [
     { quote: 'Cozy Thrift made me feel like shopping at a boutique with secondhand prices. The pieces arrived beautifully packed.', author: 'Jane M.' },
     { quote: 'The product details were clear and the checkout via WhatsApp was fast and friendly. I love my thrifted jacket.', author: 'Victor N.' },
     { quote: 'Stylish finds, quick replies, and excellent service. Cozy Thrift KE is my new favorite secondhand shop.', author: 'Amina K.' }
   ];
   const container = document.getElementById('testimonialGrid');
   if (!container) return;
+
   container.innerHTML = testimonials.map((item) => `
     <article class="testimonial-card">
-      <p>“${item.quote}”</p>
-      <strong>– ${item.author}</strong>
+      <p>"${item.quote}"</p>
+      <strong>- ${item.author}</strong>
     </article>
   `).join('');
 }
 
-function renderShopPage() {
+function renderShopPage(): void {
   const grid = document.getElementById('shopGrid');
   if (!grid) return;
-  const searchInput = document.getElementById('searchInput');
-  const sortSelect = document.getElementById('sortSelect');
+
+  const searchInput = document.getElementById('searchInput') as HTMLInputElement | null;
+  const sortSelect = document.getElementById('sortSelect') as HTMLSelectElement | null;
   const categoryFilter = getQueryParameter('category');
   let products = getLocalProducts();
+
   if (categoryFilter) {
     products = products.filter((product) => product.category.toLowerCase() === categoryFilter.toLowerCase());
   }
+
   if (searchInput) {
     searchInput.addEventListener('input', () => renderShopPage());
     const searchValue = searchInput.value.trim().toLowerCase();
@@ -170,6 +194,7 @@ function renderShopPage() {
       products = products.filter((product) => product.name.toLowerCase().includes(searchValue) || product.description.toLowerCase().includes(searchValue));
     }
   }
+
   if (sortSelect) {
     sortSelect.addEventListener('change', () => renderShopPage());
     const sortValue = sortSelect.value;
@@ -177,6 +202,7 @@ function renderShopPage() {
     if (sortValue === 'price-desc') products.sort((a, b) => b.price - a.price);
     if (sortValue === 'newest') products = [...products].reverse();
   }
+
   if (!categoryFilter) {
     const categoryOrder = getCategoryPriority();
     products.sort((a, b) => {
@@ -190,6 +216,7 @@ function renderShopPage() {
       return a.name.localeCompare(b.name);
     });
   }
+
   const filters = document.getElementById('shopCategoryList');
   if (filters) {
     const categories = sortCategories([...new Set(getLocalProducts().map((product) => product.category))]).filter(shouldShowCategory);
@@ -200,12 +227,14 @@ function renderShopPage() {
       `;
     }).join('');
   }
+
   grid.innerHTML = products.length ? products.map(createProductCard).join('') : '<p>No products found for this search.</p>';
 }
 
-function renderProductPage() {
+function renderProductPage(): void {
   const productContainer = document.getElementById('productDetail');
   if (!productContainer) return;
+
   const productId = getQueryParameter('id');
   const products = getLocalProducts();
   const product = products.find((item) => item.id === productId);
@@ -213,11 +242,13 @@ function renderProductPage() {
     productContainer.innerHTML = '<p>Product not found.</p>';
     return;
   }
+
   const thumbList = product.images.map((src, index) => `
     <button class="product-thumb${index === 0 ? ' active' : ''}" onclick="selectProductImage(${index})">
       <img src="${src}" alt="${product.name} thumbnail">
     </button>
   `).join('');
+
   productContainer.innerHTML = `
     <div class="product-gallery">
       <div class="product-main-image">
@@ -227,7 +258,7 @@ function renderProductPage() {
     </div>
     <div class="product-info">
       <h2>${product.name}</h2>
-      <p class="product-subtitle">${product.category} · ${product.size}</p>
+      <p class="product-subtitle">${product.category} | ${product.size}</p>
       <div class="product-meta">
         <span class="product-price">${formatPrice(product.price)}</span>
         <span class="product-condition">Condition: ${product.condition}</span>
@@ -241,31 +272,34 @@ function renderProductPage() {
   `;
 }
 
-function selectProductImage(index) {
+function selectProductImage(index: number): void {
   const productId = getQueryParameter('id');
   const product = getLocalProducts().find((item) => item.id === productId);
-  if (!product) return;
-  const mainImage = document.getElementById('mainProductImage');
+  const mainImage = document.getElementById('mainProductImage') as HTMLImageElement | null;
+  if (!product || !mainImage || !product.images[index]) return;
+
   const thumbs = document.querySelectorAll('.product-thumb');
   mainImage.src = product.images[index];
   thumbs.forEach((thumb, thumbIndex) => thumb.classList.toggle('active', thumbIndex === index));
 }
 
-function orderNow(productId) {
+function orderNow(productId: string): void {
   const products = getLocalProducts();
   const product = products.find((item) => item.id === productId);
   if (!product) return;
-  const base = `https://wa.me/254797775228?text=`;
+
+  const base = 'https://wa.me/254797775228?text=';
   const message = `Hello Cozy Thrift KE, I want to order: ${product.name} for ${formatPrice(product.price)}.`;
   window.open(base + encodeURIComponent(message), '_blank');
 }
 
-function renderCartPage() {
+function renderCartPage(): void {
   const tableBody = document.getElementById('cartTableBody');
   const cartEmpty = document.getElementById('cartEmpty');
   const summaryTotal = document.getElementById('cartTotal');
-  const checkoutButton = document.getElementById('checkoutButton');
+  const checkoutButton = document.getElementById('checkoutButton') as DisableableElement | null;
   if (!tableBody || !cartEmpty || !summaryTotal) return;
+
   const cart = getCart();
   if (!cart.length) {
     cartEmpty.style.display = 'block';
@@ -274,6 +308,7 @@ function renderCartPage() {
     if (checkoutButton) checkoutButton.disabled = true;
     return;
   }
+
   cartEmpty.style.display = 'none';
   tableBody.innerHTML = cart.map((item, index) => `
     <tr>
@@ -298,33 +333,36 @@ function renderCartPage() {
   if (checkoutButton) checkoutButton.disabled = false;
 }
 
-function updateQuantity(index, value) {
+function updateQuantity(index: number, value: string): void {
   const cart = getCart();
   const quantity = Number(value);
-  if (quantity < 1) return;
+  if (quantity < 1 || !cart[index]) return;
+
   cart[index].quantity = quantity;
   saveCart(cart);
   renderCartPage();
 }
 
-function removeCartItem(index) {
+function removeCartItem(index: number): void {
   const cart = getCart();
   cart.splice(index, 1);
   saveCart(cart);
   renderCartPage();
 }
 
-function renderCheckoutPage() {
+function renderCheckoutPage(): void {
   const summary = document.getElementById('checkoutSummary');
   const notice = document.getElementById('checkoutNotice');
-  const form = document.getElementById('checkoutForm');
+  const form = document.getElementById('checkoutForm') as HTMLFormElement | null;
   if (!summary || !form || !notice) return;
+
   const cart = getCart();
   if (!cart.length) {
     notice.textContent = 'Your cart is empty. Please add items before checking out.';
     form.style.display = 'none';
     return;
   }
+
   form.removeEventListener('submit', submitCheckout);
   form.addEventListener('submit', submitCheckout);
   form.style.display = 'grid';
@@ -340,21 +378,28 @@ function renderCheckoutPage() {
   `;
 }
 
-function submitCheckout(event) {
+function getInputValue(id: string): string {
+  const input = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+  return input ? input.value.trim() : '';
+}
+
+function submitCheckout(event: Event): void {
   event.preventDefault();
-  const name = document.getElementById('checkoutName').value.trim();
-  const phone = document.getElementById('checkoutPhone').value.trim();
-  const location = document.getElementById('checkoutLocation').value.trim();
-  const notes = document.getElementById('checkoutNotes').value.trim();
+  const name = getInputValue('checkoutName');
+  const phone = getInputValue('checkoutPhone');
+  const location = getInputValue('checkoutLocation');
+  const notes = getInputValue('checkoutNotes');
   if (!name || !phone || !location) {
     alert('Name, phone, and location are required.');
     return;
   }
+
   const cart = getCart();
   if (!cart.length) {
     alert('Cart is empty.');
     return;
   }
+
   const messageLines = [
     'Cozy Thrift KE order',
     ...cart.map((item, index) => `${index + 1}. ${item.name} x${item.quantity} - ${formatPrice(item.price * item.quantity)}`),
@@ -364,21 +409,25 @@ function submitCheckout(event) {
     `Location: ${location}`
   ];
   if (notes) messageLines.push(`Notes: ${notes}`);
+
   const base = 'https://wa.me/254797775228?text=';
   window.open(base + encodeURIComponent(messageLines.join('\n')), '_blank');
   localStorage.removeItem('cart');
-  event.target.reset();
+
+  const form = event.currentTarget as HTMLFormElement | null;
+  form?.reset();
   renderCheckoutPage();
 }
 
-function renderContactPage() {
-  const form = document.getElementById('contactForm');
+function renderContactPage(): void {
+  const form = document.getElementById('contactForm') as HTMLFormElement | null;
   if (!form) return;
+
   form.addEventListener('submit', (event) => {
     event.preventDefault();
-    const name = document.getElementById('contactName').value.trim();
-    const email = document.getElementById('contactEmail').value.trim();
-    const message = document.getElementById('contactMessage').value.trim();
+    const name = getInputValue('contactName');
+    const email = getInputValue('contactEmail');
+    const message = getInputValue('contactMessage');
     if (!name || !message || !email.includes('@')) {
       alert('Please provide your name, valid email, and message.');
       return;
@@ -388,12 +437,14 @@ function renderContactPage() {
   });
 }
 
-function initFaq() {
+function initFaq(): void {
   const faqItems = document.querySelectorAll('.faq-item');
   faqItems.forEach((item) => {
     const button = item.querySelector('.faq-question');
+    const answer = item.querySelector('.faq-answer');
+    if (!button || !answer) return;
+
     button.addEventListener('click', () => {
-      const answer = item.querySelector('.faq-answer');
       const isOpen = answer.classList.contains('open');
       document.querySelectorAll('.faq-answer.open').forEach((openItem) => openItem.classList.remove('open'));
       if (!isOpen) answer.classList.add('open');
@@ -401,84 +452,92 @@ function initFaq() {
   });
 }
 
-function renderAdminPage() {
-  const adminForm = document.getElementById('adminForm');
+function renderAdminPage(): void {
+  const adminForm = document.getElementById('adminForm') as HTMLFormElement | null;
   const adminProducts = document.getElementById('adminProducts');
   const loginPanel = document.getElementById('adminLoginPanel');
   const panel = document.getElementById('adminPanel');
   const signOut = document.getElementById('signOutButton');
   if (!adminForm || !adminProducts || !loginPanel || !panel) return;
+
   const loggedIn = localStorage.getItem('adminLoggedIn') === 'true';
   if (!loggedIn) {
     loginPanel.style.display = 'block';
     panel.style.display = 'none';
-  } else {
-    loginPanel.style.display = 'none';
-    panel.style.display = 'block';
-    signOut.addEventListener('click', () => {
-      localStorage.removeItem('adminLoggedIn');
-      window.location.reload();
-    });
-    adminForm.addEventListener('submit', handleAdminSave);
-    const cancelEdit = document.getElementById('adminCancelEdit');
-    if (cancelEdit) cancelEdit.addEventListener('click', resetAdminForm);
-    setupAdminMediaUpload();
-    renderAdminCategoryDropdown();
-    renderAdminConditionDropdown();
-    renderAdminSizeDropdown();
-    renderAdminProducts();
+    return;
   }
+
+  loginPanel.style.display = 'none';
+  panel.style.display = 'block';
+  signOut?.addEventListener('click', () => {
+    localStorage.removeItem('adminLoggedIn');
+    window.location.reload();
+  });
+  adminForm.addEventListener('submit', handleAdminSave);
+
+  const cancelEdit = document.getElementById('adminCancelEdit');
+  if (cancelEdit) cancelEdit.addEventListener('click', resetAdminForm);
+  setupAdminMediaUpload();
+  renderAdminCategoryDropdown();
+  renderAdminConditionDropdown();
+  renderAdminSizeDropdown();
+  renderAdminProducts();
 }
 
-function getAvailableCategories() {
+function getAvailableCategories(): string[] {
   const products = getLocalProducts();
   const categories = [...new Set(products.map((product) => product.category))];
   return sortCategories(categories);
 }
 
-function renderAdminCategoryDropdown(selectedCategory = '') {
-  const categorySelect = document.getElementById('adminCategory');
+function renderAdminCategoryDropdown(selectedCategory = ''): void {
+  const categorySelect = document.getElementById('adminCategory') as HTMLSelectElement | null;
   if (!categorySelect) return;
+
   const categories = getAvailableCategories();
-  categorySelect.innerHTML = `<option value="">Select category</option>` + categories.map((category) => `
+  categorySelect.innerHTML = '<option value="">Select category</option>' + categories.map((category) => `
     <option value="${category}"${category === selectedCategory ? ' selected' : ''}>${category}</option>
   `).join('');
 }
 
-function getAvailableConditions() {
+function getAvailableConditions(): string[] {
   return ['Excellent', 'Very Good', 'Good', 'Fair'];
 }
 
-function renderAdminConditionDropdown(selectedCondition = '') {
-  const conditionSelect = document.getElementById('adminCondition');
+function renderAdminConditionDropdown(selectedCondition = ''): void {
+  const conditionSelect = document.getElementById('adminCondition') as HTMLSelectElement | null;
   if (!conditionSelect) return;
+
   const conditions = getAvailableConditions();
-  conditionSelect.innerHTML = `<option value="">Select condition</option>` + conditions.map((condition) => `
+  conditionSelect.innerHTML = '<option value="">Select condition</option>' + conditions.map((condition) => `
     <option value="${condition}"${condition === selectedCondition ? ' selected' : ''}>${condition}</option>
   `).join('');
 }
 
-function getAvailableSizes() {
+function getAvailableSizes(): string[] {
   return ['Large', 'Medium', 'Small'];
 }
 
-function renderAdminSizeDropdown(selectedSize = '') {
-  const sizeSelect = document.getElementById('adminSize');
+function renderAdminSizeDropdown(selectedSize = ''): void {
+  const sizeSelect = document.getElementById('adminSize') as HTMLSelectElement | null;
   if (!sizeSelect) return;
+
   const sizes = getAvailableSizes();
-  sizeSelect.innerHTML = `<option value="">Select size</option>` + sizes.map((size) => `
+  sizeSelect.innerHTML = '<option value="">Select size</option>' + sizes.map((size) => `
     <option value="${size}"${size === selectedSize ? ' selected' : ''}>${size}</option>
   `).join('');
 }
 
-function setupAdminMediaUpload() {
+function setupAdminMediaUpload(): void {
   const dropzone = document.getElementById('adminDropzone');
-  const fileInput = document.getElementById('adminMediaFile');
+  const fileInput = document.getElementById('adminMediaFile') as HTMLInputElement | null;
   const dropzoneText = document.getElementById('adminDropzoneText');
   if (!dropzone || !fileInput || !dropzoneText) return;
-  const updateText = (file) => {
+
+  const updateText = (file: File | null | undefined): void => {
     dropzoneText.textContent = file ? `Selected: ${file.name}` : 'No file selected';
   };
+
   dropzone.addEventListener('click', () => fileInput.click());
   dropzone.addEventListener('dragover', (event) => {
     event.preventDefault();
@@ -488,21 +547,21 @@ function setupAdminMediaUpload() {
   dropzone.addEventListener('drop', (event) => {
     event.preventDefault();
     dropzone.classList.remove('dragover');
-    const files = event.dataTransfer.files;
-    if (files.length) {
+    const files = event.dataTransfer?.files;
+    if (files?.length) {
       fileInput.files = files;
       updateText(files[0]);
     }
   });
   fileInput.addEventListener('change', () => {
-    updateText(fileInput.files[0]);
+    updateText(fileInput.files?.[0]);
   });
 }
 
-function handleAdminLogin(event) {
+function handleAdminLogin(event: Event): void {
   event.preventDefault();
-  const username = document.getElementById('adminUsername').value.trim();
-  const password = document.getElementById('adminPassword').value.trim();
+  const username = getInputValue('adminUsername');
+  const password = getInputValue('adminPassword');
   if (username === 'lixxyshiko' && password === 'thrift2026') {
     localStorage.setItem('adminLoggedIn', 'true');
     window.location.reload();
@@ -511,29 +570,32 @@ function handleAdminLogin(event) {
   }
 }
 
-async function handleAdminSave(event) {
+async function handleAdminSave(event: Event): Promise<void> {
   event.preventDefault();
-  const name = document.getElementById('adminName').value.trim();
-  const price = Number(document.getElementById('adminPrice').value.trim());
-  const category = document.getElementById('adminCategory').value.trim();
-  const size = document.getElementById('adminSize').value.trim();
-  const condition = document.getElementById('adminCondition').value.trim();
-  const description = document.getElementById('adminDescription').value.trim();
-  const mediaInput = document.getElementById('adminMediaFile');
-  const imageUrl = document.getElementById('adminImage').value.trim();
+  const name = getInputValue('adminName');
+  const price = Number(getInputValue('adminPrice'));
+  const category = getInputValue('adminCategory');
+  const size = getInputValue('adminSize');
+  const condition = getInputValue('adminCondition');
+  const description = getInputValue('adminDescription');
+  const mediaInput = document.getElementById('adminMediaFile') as HTMLInputElement | null;
+  const imageUrl = getInputValue('adminImage');
   let mediaSource = '';
-  if (mediaInput && mediaInput.files.length) {
+
+  if (mediaInput?.files?.length) {
     const file = mediaInput.files[0];
     mediaSource = await toBase64(file);
   } else if (imageUrl) {
     mediaSource = imageUrl;
   }
+
   if (!name || !price || !category || !size || !condition || !description || !mediaSource) {
     alert('Please complete every field and add a media file or URL.');
     return;
   }
+
   const products = getLocalProducts();
-  const editingId = document.getElementById('adminProductId').value;
+  const editingId = getInputValue('adminProductId');
   if (editingId) {
     const existingIndex = products.findIndex((item) => item.id === editingId);
     if (existingIndex !== -1) {
@@ -551,14 +613,15 @@ async function handleAdminSave(event) {
     const id = `p${Date.now()}`;
     products.push({ id, name, price, category, size, condition, slug: name.toLowerCase().replace(/\s+/g, '-'), description, images: [mediaSource], tags: [] });
   }
+
   saveLocalProducts(products);
   resetAdminForm();
   renderAdminProducts();
 }
 
-function resetAdminForm() {
-  const adminForm = document.getElementById('adminForm');
-  const adminProductId = document.getElementById('adminProductId');
+function resetAdminForm(): void {
+  const adminForm = document.getElementById('adminForm') as HTMLFormElement | null;
+  const adminProductId = document.getElementById('adminProductId') as HTMLInputElement | null;
   const adminDropzoneText = document.getElementById('adminDropzoneText');
   const adminSubmitButton = document.getElementById('adminSubmitButton');
   const adminCancelEdit = document.getElementById('adminCancelEdit');
@@ -572,15 +635,17 @@ function resetAdminForm() {
   renderAdminSizeDropdown();
 }
 
-function renderAdminProducts() {
+function renderAdminProducts(): void {
   const adminProducts = document.getElementById('adminProducts');
+  if (!adminProducts) return;
+
   const products = getLocalProducts();
   adminProducts.innerHTML = products.map((product) => `
     <div class="admin-card">
       <div class="product-row">
         <div>
           <strong>${product.name}</strong>
-          <p>${product.category} · ${product.size} · ${product.condition}</p>
+          <p>${product.category} | ${product.size} | ${product.condition}</p>
           <p>${formatPrice(product.price)}</p>
         </div>
         <div class="admin-actions">
@@ -592,20 +657,30 @@ function renderAdminProducts() {
   `).join('');
 }
 
-function editProduct(productId) {
+function editProduct(productId: string): void {
   const products = getLocalProducts();
   const product = products.find((item) => item.id === productId);
   if (!product) return;
-  document.getElementById('adminProductId').value = product.id;
-  document.getElementById('adminName').value = product.name;
-  document.getElementById('adminPrice').value = product.price;
+
+  const productIdInput = document.getElementById('adminProductId') as HTMLInputElement | null;
+  const nameInput = document.getElementById('adminName') as HTMLInputElement | null;
+  const priceInput = document.getElementById('adminPrice') as HTMLInputElement | null;
+  const descriptionInput = document.getElementById('adminDescription') as HTMLTextAreaElement | null;
+  const imageInput = document.getElementById('adminImage') as HTMLInputElement | null;
+  if (!productIdInput || !nameInput || !priceInput || !descriptionInput || !imageInput) return;
+
+  productIdInput.value = product.id;
+  nameInput.value = product.name;
+  priceInput.value = String(product.price);
   renderAdminCategoryDropdown(product.category);
   renderAdminSizeDropdown(product.size);
   renderAdminConditionDropdown(product.condition);
-  document.getElementById('adminDescription').value = product.description;
-  document.getElementById('adminImage').value = product.images[0] || '';
+  descriptionInput.value = product.description;
+  imageInput.value = product.images[0] || '';
+
   const adminDropzoneText = document.getElementById('adminDropzoneText');
   if (adminDropzoneText) adminDropzoneText.textContent = product.images[0] ? 'Current media will be used unless replaced' : 'No file selected';
+
   const adminSubmitButton = document.getElementById('adminSubmitButton');
   const adminCancelEdit = document.getElementById('adminCancelEdit');
   if (adminSubmitButton) adminSubmitButton.textContent = 'Save Changes';
@@ -614,20 +689,22 @@ function editProduct(productId) {
 
 window.editProduct = editProduct;
 
-function deleteProduct(productId) {
+function deleteProduct(productId: string): void {
   if (!confirm('Delete this product?')) return;
+
   const products = getLocalProducts().filter((product) => product.id !== productId);
   saveLocalProducts(products);
   renderAdminProducts();
 }
 
-function showWhatsAppButton() {
-  const whatsApp = document.getElementById('floatingWhatsApp');
+function showWhatsAppButton(): void {
+  const whatsApp = document.getElementById('floatingWhatsApp') as HTMLAnchorElement | null;
   if (!whatsApp) return;
+
   whatsApp.href = 'https://wa.me/254797775228?text=' + encodeURIComponent('Hello Cozy Thrift KE, I would like to place an order.');
 }
 
-function initPage() {
+function initPage(): void {
   initProductStore();
   renderFeaturedProducts();
   renderCategorySection();

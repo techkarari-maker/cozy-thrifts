@@ -1,4 +1,4 @@
-window.PRODUCTS = [
+const initialProducts: Product[] = [
   {
     id: 'p1',
     name: 'Vintage Knit Cardigan',
@@ -160,3 +160,5 @@ window.PRODUCTS = [
     tags: ['sweater', 'knit', 'layer']
   }
 ];
+
+window.PRODUCTS = initialProducts;
