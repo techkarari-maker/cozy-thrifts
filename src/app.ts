@@ -86,6 +86,32 @@ function createProductCard(product: Product): string {
   `;
 }
 
+function createProductSlot(product?: Product): string {
+  if (!product) {
+    return `
+      <article class="category-slot category-slot-empty">
+        <div class="category-slot-media"></div>
+        <div class="category-slot-copy">
+          <strong>Open Slot</strong>
+          <p>Waiting for the next product in this category.</p>
+        </div>
+      </article>
+    `;
+  }
+
+  return `
+    <a class="category-slot" href="product.html?id=${product.id}">
+      <div class="category-slot-media">
+        <img src="${product.images[0]}" alt="${product.name}">
+      </div>
+      <div class="category-slot-copy">
+        <strong>${product.name}</strong>
+        <p>${formatPrice(product.price)}</p>
+      </div>
+    </a>
+  `;
+}
+
 function addToCartFromCard(productId: string): void {
   const products = getLocalProducts();
   const product = products.find((item) => item.id === productId);
@@ -241,7 +267,35 @@ function renderShopPage(): void {
     }).join("");
   }
 
-  grid.innerHTML = products.length ? products.map(createProductCard).join("") : "<p>No products found for this search.</p>";
+  const visibleCategories = categoryFilter
+    ? sortCategories([categoryFilter].map((category) => products.find((product) => product.category.toLowerCase() === category.toLowerCase())?.category || categoryFilter)).filter(Boolean)
+    : sortCategories([...new Set(products.map((product) => product.category))]).filter(shouldShowCategory);
+
+  if (!products.length || !visibleCategories.length) {
+    grid.innerHTML = "<p>No products found for this search.</p>";
+    return;
+  }
+
+  grid.className = "shop-category-sections";
+  grid.innerHTML = visibleCategories.map((category) => {
+    const categoryProducts = products.filter((product) => product.category.toLowerCase() === category.toLowerCase());
+    const totalSlots = Math.max(20, categoryProducts.length);
+    const slots = Array.from({ length: totalSlots }, (_, index) => createProductSlot(categoryProducts[index]));
+
+    return `
+      <section class="shop-category-section" id="category-${encodeURIComponent(category.toLowerCase())}">
+        <div class="shop-category-header">
+          <div>
+            <h4>${category}</h4>
+            <p>${categoryProducts.length} product${categoryProducts.length === 1 ? "" : "s"} in this category.</p>
+          </div>
+        </div>
+        <div class="shop-slot-grid">
+          ${slots.join("")}
+        </div>
+      </section>
+    `;
+  }).join("");
 }
 
 function renderProductPage(): void {
