@@ -46,6 +46,19 @@ function toBase64(file: File): Promise<string> {
   });
 }
 
+function parseImageUrls(value: string): string[] {
+  return value
+    .split(/\r?\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function getSelectedCategory(): string {
+  const selectedCategory = (document.getElementById("adminCategory") as HTMLSelectElement | null)?.value.trim() || "";
+  const customCategory = (document.getElementById("adminCustomCategory") as HTMLInputElement | null)?.value.trim() || "";
+  return customCategory || selectedCategory;
+}
+
 function getQueryParameter(key: string): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get(key);
@@ -543,8 +556,13 @@ function setupAdminMediaUpload(): void {
   const dropzoneText = document.getElementById("adminDropzoneText");
   if (!dropzone || !fileInput || !dropzoneText || dropzone.dataset.bound) return;
 
-  const updateText = (file?: File): void => {
-    dropzoneText.textContent = file ? `Selected: ${file.name}` : "No file selected";
+  const updateText = (files?: FileList | null): void => {
+    if (!files?.length) {
+      dropzoneText.textContent = "No file selected";
+      return;
+    }
+
+    dropzoneText.textContent = files.length === 1 ? `Selected: ${files[0].name}` : `${files.length} pictures selected`;
   };
 
   dropzone.addEventListener("click", () => fileInput.click());
@@ -559,11 +577,11 @@ function setupAdminMediaUpload(): void {
     const files = event.dataTransfer?.files;
     if (files?.length) {
       fileInput.files = files;
-      updateText(files[0]);
+      updateText(files);
     }
   });
   fileInput.addEventListener("change", () => {
-    updateText(fileInput.files?.[0]);
+    updateText(fileInput.files);
   });
 
   dropzone.dataset.bound = "true";
@@ -588,21 +606,27 @@ async function handleAdminSave(event: SubmitEvent): Promise<void> {
 
   const name = (document.getElementById("adminName") as HTMLInputElement | null)?.value.trim() || "";
   const price = Number((document.getElementById("adminPrice") as HTMLInputElement | null)?.value.trim() || "");
-  const category = (document.getElementById("adminCategory") as HTMLSelectElement | null)?.value.trim() || "";
+  const category = getSelectedCategory();
   const size = (document.getElementById("adminSize") as HTMLSelectElement | null)?.value.trim() || "";
   const condition = (document.getElementById("adminCondition") as HTMLSelectElement | null)?.value.trim() || "";
   const description = (document.getElementById("adminDescription") as HTMLTextAreaElement | null)?.value.trim() || "";
   const mediaInput = document.getElementById("adminMediaFile") as HTMLInputElement | null;
   const imageUrl = (document.getElementById("adminImage") as HTMLInputElement | null)?.value.trim() || "";
+  const galleryUrls = parseImageUrls((document.getElementById("adminImageGallery") as HTMLTextAreaElement | null)?.value || "");
 
-  let mediaSource = "";
+  let images: string[] = [];
   if (mediaInput?.files?.length) {
-    mediaSource = await toBase64(mediaInput.files[0]);
-  } else if (imageUrl) {
-    mediaSource = imageUrl;
+    images = await Promise.all(Array.from(mediaInput.files).map((file) => toBase64(file)));
   }
+  if (imageUrl) {
+    images.unshift(imageUrl);
+  }
+  if (galleryUrls.length) {
+    images.push(...galleryUrls);
+  }
+  images = images.filter((image, index, list) => Boolean(image) && list.indexOf(image) === index);
 
-  if (!name || !price || !category || !size || !condition || !description || !mediaSource) {
+  if (!name || !price || !category || !size || !condition || !description || !images.length) {
     alert("Please complete every field and add a media file or URL.");
     return;
   }
@@ -620,11 +644,11 @@ async function handleAdminSave(event: SubmitEvent): Promise<void> {
       existing.condition = condition;
       existing.description = description;
       existing.slug = name.toLowerCase().replace(/\s+/g, "-");
-      existing.images = [mediaSource];
+      existing.images = images;
     }
   } else {
     const id = `p${Date.now()}`;
-    products.push({ id, name, price, category, size, condition, slug: name.toLowerCase().replace(/\s+/g, "-"), description, images: [mediaSource], tags: [] });
+    products.push({ id, name, price, category, size, condition, slug: name.toLowerCase().replace(/\s+/g, "-"), description, images, tags: [] });
   }
 
   saveLocalProducts(products);
@@ -635,12 +659,14 @@ async function handleAdminSave(event: SubmitEvent): Promise<void> {
 function resetAdminForm(): void {
   const adminForm = document.getElementById("adminForm") as HTMLFormElement | null;
   const adminProductId = document.getElementById("adminProductId") as HTMLInputElement | null;
+  const adminCustomCategory = document.getElementById("adminCustomCategory") as HTMLInputElement | null;
   const adminDropzoneText = document.getElementById("adminDropzoneText");
   const adminSubmitButton = document.getElementById("adminSubmitButton");
   const adminCancelEdit = document.getElementById("adminCancelEdit");
 
   adminForm?.reset();
   if (adminProductId) adminProductId.value = "";
+  if (adminCustomCategory) adminCustomCategory.value = "";
   if (adminDropzoneText) adminDropzoneText.textContent = "No file selected";
   if (adminSubmitButton) adminSubmitButton.textContent = "Add Product";
   if (adminCancelEdit) adminCancelEdit.style.display = "none";
@@ -685,10 +711,13 @@ function editProduct(productId: string): void {
   renderAdminConditionDropdown(product.condition);
   (document.getElementById("adminDescription") as HTMLTextAreaElement | null)!.value = product.description;
   (document.getElementById("adminImage") as HTMLInputElement | null)!.value = product.images[0] || "";
+  (document.getElementById("adminImageGallery") as HTMLTextAreaElement | null)!.value = product.images.slice(1).join("\n");
+  const customCategoryInput = document.getElementById("adminCustomCategory") as HTMLInputElement | null;
+  if (customCategoryInput) customCategoryInput.value = "";
 
   const adminDropzoneText = document.getElementById("adminDropzoneText");
   if (adminDropzoneText) {
-    adminDropzoneText.textContent = product.images[0] ? "Current media will be used unless replaced" : "No file selected";
+    adminDropzoneText.textContent = product.images.length ? `${product.images.length} saved picture(s)` : "No file selected";
   }
 
   const adminSubmitButton = document.getElementById("adminSubmitButton");

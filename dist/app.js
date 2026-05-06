@@ -37,6 +37,14 @@ function toBase64(file) {
     reader.readAsDataURL(file);
   });
 }
+function parseImageUrls(value) {
+  return value.split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean);
+}
+function getSelectedCategory() {
+  const selectedCategory = document.getElementById("adminCategory")?.value.trim() || "";
+  const customCategory = document.getElementById("adminCustomCategory")?.value.trim() || "";
+  return customCategory || selectedCategory;
+}
 function getQueryParameter(key) {
   const params = new URLSearchParams(window.location.search);
   return params.get(key);
@@ -496,8 +504,12 @@ function setupAdminMediaUpload() {
   const dropzoneText = document.getElementById("adminDropzoneText");
   if (!dropzone || !fileInput || !dropzoneText || dropzone.dataset.bound)
     return;
-  const updateText = (file) => {
-    dropzoneText.textContent = file ? `Selected: ${file.name}` : "No file selected";
+  const updateText = (files) => {
+    if (!files?.length) {
+      dropzoneText.textContent = "No file selected";
+      return;
+    }
+    dropzoneText.textContent = files.length === 1 ? `Selected: ${files[0].name}` : `${files.length} pictures selected`;
   };
   dropzone.addEventListener("click", () => fileInput.click());
   dropzone.addEventListener("dragover", (event) => {
@@ -511,11 +523,11 @@ function setupAdminMediaUpload() {
     const files = event.dataTransfer?.files;
     if (files?.length) {
       fileInput.files = files;
-      updateText(files[0]);
+      updateText(files);
     }
   });
   fileInput.addEventListener("change", () => {
-    updateText(fileInput.files?.[0]);
+    updateText(fileInput.files);
   });
   dropzone.dataset.bound = "true";
 }
@@ -536,24 +548,30 @@ async function handleAdminSave(event) {
   event.preventDefault();
   const name = ((_a = document.getElementById("adminName")) == null ? void 0 : _a.value.trim()) || "";
   const price = Number(((_b = document.getElementById("adminPrice")) == null ? void 0 : _b.value.trim()) || "");
-  const category = ((_c = document.getElementById("adminCategory")) == null ? void 0 : _c.value.trim()) || "";
+  const category = getSelectedCategory();
   const size = ((_d = document.getElementById("adminSize")) == null ? void 0 : _d.value.trim()) || "";
   const condition = ((_e = document.getElementById("adminCondition")) == null ? void 0 : _e.value.trim()) || "";
   const description = ((_f = document.getElementById("adminDescription")) == null ? void 0 : _f.value.trim()) || "";
   const mediaInput = document.getElementById("adminMediaFile");
   const imageUrl = ((_g = document.getElementById("adminImage")) == null ? void 0 : _g.value.trim()) || "";
-  let mediaSource = "";
+  const galleryUrls = parseImageUrls(((_h = document.getElementById("adminImageGallery")) == null ? void 0 : _h.value) || "");
+  let images = [];
   if (mediaInput?.files?.length) {
-    mediaSource = await toBase64(mediaInput.files[0]);
-  } else if (imageUrl) {
-    mediaSource = imageUrl;
+    images = await Promise.all(Array.from(mediaInput.files).map((file) => toBase64(file)));
   }
-  if (!name || !price || !category || !size || !condition || !description || !mediaSource) {
+  if (imageUrl) {
+    images.unshift(imageUrl);
+  }
+  if (galleryUrls.length) {
+    images.push(...galleryUrls);
+  }
+  images = images.filter((image, index, list) => Boolean(image) && list.indexOf(image) === index);
+  if (!name || !price || !category || !size || !condition || !description || !images.length) {
     alert("Please complete every field and add a media file or URL.");
     return;
   }
   const products = getLocalProducts();
-  const editingId = ((_h = document.getElementById("adminProductId")) == null ? void 0 : _h.value) || "";
+  const editingId = ((_j = document.getElementById("adminProductId")) == null ? void 0 : _j.value) || "";
   if (editingId) {
     const existingIndex = products.findIndex((item) => item.id === editingId);
     if (existingIndex !== -1) {
@@ -565,11 +583,11 @@ async function handleAdminSave(event) {
       existing.condition = condition;
       existing.description = description;
       existing.slug = name.toLowerCase().replace(/\s+/g, "-");
-      existing.images = [mediaSource];
+      existing.images = images;
     }
   } else {
     const id = `p${Date.now()}`;
-    products.push({ id, name, price, category, size, condition, slug: name.toLowerCase().replace(/\s+/g, "-"), description, images: [mediaSource], tags: [] });
+    products.push({ id, name, price, category, size, condition, slug: name.toLowerCase().replace(/\s+/g, "-"), description, images, tags: [] });
   }
   saveLocalProducts(products);
   resetAdminForm();
@@ -578,12 +596,15 @@ async function handleAdminSave(event) {
 function resetAdminForm() {
   const adminForm = document.getElementById("adminForm");
   const adminProductId = document.getElementById("adminProductId");
+  const adminCustomCategory = document.getElementById("adminCustomCategory");
   const adminDropzoneText = document.getElementById("adminDropzoneText");
   const adminSubmitButton = document.getElementById("adminSubmitButton");
   const adminCancelEdit = document.getElementById("adminCancelEdit");
   adminForm?.reset();
   if (adminProductId)
     adminProductId.value = "";
+  if (adminCustomCategory)
+    adminCustomCategory.value = "";
   if (adminDropzoneText)
     adminDropzoneText.textContent = "No file selected";
   if (adminSubmitButton)
@@ -628,9 +649,13 @@ function editProduct(productId) {
   renderAdminConditionDropdown(product.condition);
   document.getElementById("adminDescription").value = product.description;
   document.getElementById("adminImage").value = product.images[0] || "";
+  document.getElementById("adminImageGallery").value = product.images.slice(1).join("\n");
+  const customCategoryInput = document.getElementById("adminCustomCategory");
+  if (customCategoryInput)
+    customCategoryInput.value = "";
   const adminDropzoneText = document.getElementById("adminDropzoneText");
   if (adminDropzoneText) {
-    adminDropzoneText.textContent = product.images[0] ? "Current media will be used unless replaced" : "No file selected";
+    adminDropzoneText.textContent = product.images.length ? `${product.images.length} saved picture(s)` : "No file selected";
   }
   const adminSubmitButton = document.getElementById("adminSubmitButton");
   const adminCancelEdit = document.getElementById("adminCancelEdit");

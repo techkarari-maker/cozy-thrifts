@@ -40,17 +40,19 @@
           <div class="field"><label for="adminName">Product Name</label><input id="adminName" type="text"></div>
           <div class="field"><label for="adminPrice">Price</label><input id="adminPrice" type="text"></div>
           <div class="field"><label for="adminCategory">Category</label><select id="adminCategory"><option value="">Select category</option></select></div>
+          <div class="field"><label for="adminCustomCategory">New Category (optional)</label><input id="adminCustomCategory" type="text" placeholder="Example: Hoodies"></div>
           <div class="field"><label for="adminSize">Size</label><select id="adminSize"><option value="">Select size</option><option value="Large">Large</option><option value="Medium">Medium</option><option value="Small">Small</option></select></div>
           <div class="field"><label for="adminCondition">Condition</label><select id="adminCondition"><option value="">Select condition</option><option value="Excellent">Excellent</option><option value="Very Good">Very Good</option><option value="Good">Good</option><option value="Fair">Fair</option></select></div>
           <div class="field">
-            <label>Image or Video</label>
+            <label>Product Pictures</label>
             <div id="adminDropzone" class="dropzone">
-              <p>Drag & drop image or video here, or click to choose file</p>
+              <p>Drag & drop one or more pictures here, or click to choose files</p>
               <div id="adminDropzoneText" class="file-name">No file selected</div>
             </div>
-            <input id="adminMediaFile" type="file" accept="image/*,video/*" style="display:none;">
+            <input id="adminMediaFile" type="file" accept="image/*" multiple style="display:none;">
           </div>
-          <div class="field"><label for="adminImage">Media URL (optional)</label><input id="adminImage" type="text" placeholder="https://..."></div>
+          <div class="field"><label for="adminImage">Main Image URL (optional)</label><input id="adminImage" type="text" placeholder="https://..."></div>
+          <div class="field"><label for="adminImageGallery">More Image URLs (optional)</label><textarea id="adminImageGallery" placeholder="Paste one image URL per line"></textarea></div>
           <div class="field"><label for="adminDescription">Description</label><textarea id="adminDescription"></textarea></div>
           <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
             <button id="adminSubmitButton" class="btn" type="submit">Add Product</button>
