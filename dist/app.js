@@ -410,15 +410,20 @@ function initFaq() {
   });
 }
 function renderAdminPage() {
+  const loginForm = document.getElementById("adminLoginForm");
   const adminForm = document.getElementById("adminForm");
   const adminProducts = document.getElementById("adminProducts");
   const loginPanel = document.getElementById("adminLoginPanel");
   const panel = document.getElementById("adminPanel");
   const signOut = document.getElementById("signOutButton");
-  if (!adminForm || !adminProducts || !loginPanel || !panel)
+  if (!loginForm || !adminForm || !adminProducts || !loginPanel || !panel)
     return;
   const loggedIn = localStorage.getItem("adminLoggedIn") === "true";
   if (!loggedIn) {
+    if (!loginForm.dataset.bound) {
+      loginForm.addEventListener("submit", handleAdminLogin);
+      loginForm.dataset.bound = "true";
+    }
     loginPanel.style.display = "block";
     panel.style.display = "none";
     return;
